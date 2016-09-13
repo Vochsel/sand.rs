@@ -1,0 +1,15 @@
+#settings {
+  border: solid thin black;
+  padding: 1vw;
+}
+
+#logo {
+	font-size: 4vw;
+	line-height: 0;
+	margin-top: 2vw;
+	margin-bottom: 2vw;
+}
+
+#tagline {
+	font-style: italic;
+}

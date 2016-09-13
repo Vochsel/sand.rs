@@ -48,9 +48,16 @@ function exportImg()
 function Setup(files)
 {
 	gl = twgl.getWebGLContext(wutils.dom.get("viewer"), {preserveDrawingBuffer:true});
-
+	
+	twgl.resizeCanvasToDisplaySize(gl.canvas);
+	
 	sand = CreateFromShaders(sand, files[0], files[1]);
 	view = CreateFromShaders(view, files[0], files[2]);
+
+	bufferWidth = gl.canvas.width;
+	bufferHeight = gl.canvas.height;
+
+	//console.log(bufferWidth)
 
 	var arrays = {
       position: [-1, -1, 0, 1, -1, 0, -1, 1, 0, -1, 1, 0, 1, -1, 0, 1, 1, 0],
@@ -64,6 +71,7 @@ function Setup(files)
 		{ format: gl.DEPTH_STENCIL, },
 	];
 
+	
     fbs[0] = twgl.createFramebufferInfo(gl, attachments, bufferWidth, bufferHeight);
     fbs[1] = twgl.createFramebufferInfo(gl, attachments, bufferWidth, bufferHeight);
 
