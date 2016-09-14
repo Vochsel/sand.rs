@@ -18,11 +18,13 @@
     <link type="text/css" rel="stylesheet" href="css/ui.css"/>
 
   </head>
-  <body>
+  <body onload="OnLoad()">
 
     <!-- Main Content -->
     <div id="app">
       <div id="container">
+
+        <!-- Sidebar -->
         <div id="sidebar">
           <p id="logo">Sand.art</p>
           <p id="tagline">Created by Ben Skinner</p>
@@ -38,9 +40,19 @@
               </tr>
             </table>
           </div>
-          <hr>
-          <image id="output"/>
+          <hr/>
+            <button onclick="renderer_toggle()">Toggle Renderer</button>
+            <button onclick="renderer_reset()">Reset Renderer</button>
+          <hr/>
+            <button onclick="renderer_export()">Export PNG</button>
+          <hr/>
+            <p>Background Colour</p>
+            <input id="bgColor" type="color"/>
+            <p>Sand Colour</p>
+            <input id="sandColor" type="color"/>
         </div>
+
+        <!-- Renderer -->
         <div id="panel">
             <canvas id="viewer" width="100%" height="100%"></canvas>
         </div>

@@ -92,7 +92,12 @@ function Setup(files)
         time: time * 0.001,
         resolution: [gl.canvas.width, gl.canvas.height], 
         buffer_res: [bufferWidth, bufferHeight],
-        buffer: fbs[activeBuffer].attachments[0]  
+        buffer: fbs[activeBuffer].attachments[0]  ,
+
+        renderer_active: renderer.active,
+
+        document_bg_color: wutils.conversion.hexToVec(backgroundColor.value),
+        document_sand_color: wutils.conversion.hexToVec(sandColor.value),
       };
 
       activeBuffer = (activeBuffer + 1) % fbs.length;
