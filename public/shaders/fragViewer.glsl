@@ -3,7 +3,7 @@ precision mediump float;
 uniform vec2 resolution;
 uniform float time;
 
-uniform sampler2D buffer;
+uniform sampler2D buf;
 
 
 void main() {
@@ -13,7 +13,7 @@ void main() {
   vec2 uv = sc * 2.0 - 1.0;
   uv.x *= aspect;
 
-  vec3 col = texture2D(buffer, sc).xyz;
+  vec3 col = texture2D(buf, sc).xyz;
 
   gl_FragColor = vec4(col, 1.0);
 }

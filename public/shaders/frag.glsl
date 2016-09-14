@@ -1,15 +1,21 @@
 precision mediump float;
 
+
+uniform float sand_col_r;
+uniform float sand_col_g;
+uniform float sand_col_b;
+uniform float sand_rad;
+
 uniform vec2 resolution;
 uniform vec2 buffer_res;
 uniform float time;
 
 uniform bool renderer_active;
+uniform vec3 bgcol;
 
 uniform sampler2D buffer;
 
-uniform vec3 document_bg_color;
-uniform vec3 document_sand_color;
+
 
 /* ========== Shader Lib - Ben Skinner ========== */
 
@@ -36,9 +42,10 @@ float rand(float c){
 /* ================Shader Variables ============= */
 
 #define BG vec3(0.9)
-#define GRAIN_SIZE 0.0135
+#define GRAIN_SIZE sand_rad * 0.1
 #define SAND_OPACITY 0.1
 #define SAND_AMT 100
+#define SAND_COL vec3(sand_col_r, sand_col_g, sand_col_b)
 
 /* ===================== Shader ================= */
 
@@ -103,10 +110,10 @@ vec4 create(vec2 uv)
     vec4 value = vec4(0.0);
     
     float amt = float(SAND_AMT);
-    vec3 c = vec3(document_sand_color.r, document_sand_color.g, document_sand_color.b);
+    vec3 c = vec3(SAND_COL.r, SAND_COL.g, SAND_COL.b);
     for(int i = 0; i < SAND_AMT; ++i)
     {
-     	vec4 c = circle(uv, formula(uv, float(i) / amt), c, GRAIN_SIZE);   
+     	vec4 c = circle(uv, formula(uv, float(i) / amt), SAND_COL, GRAIN_SIZE);   
         value.rgb = mix(value.rgb, c.rgb, 0.5);
         value.w += c.w;
         //value.w = mix(value.w, c.w, 0.05);
@@ -119,7 +126,7 @@ vec4 create(vec2 uv)
 
 void main() {
  	if(time < 1.0) {
-        gl_FragColor = vec4(document_bg_color, 1.0);
+        gl_FragColor = vec4(bgcol, 1.0);
         return;
     } 
 

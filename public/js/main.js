@@ -5,9 +5,9 @@ var renderer = {
 	active: true
 }
 
-
 var backgroundColor = wutils.data.create("#494746");
 var sandColor = wutils.data.create("#fffaf5");
+var sandSize = wutils.data.create(0.5);
 
 function OnLoad()
 {
@@ -16,6 +16,8 @@ function OnLoad()
 		console.log(v);
 	})
 	sandColor.inlet("sandColor");
+	sandSize.inlet("sandSize");
+
 }
 
 var shaders = wutils.file.loadMultiple(["shaders/vert.glsl", "shaders/frag.glsl", "shaders/fragViewer.glsl"], function(files) {
@@ -32,5 +34,5 @@ function renderer_toggle()
 
 function renderer_reset()
 {
-	time = 0;
+	elapsedTime = 0;
 }

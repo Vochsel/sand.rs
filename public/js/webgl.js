@@ -5,6 +5,8 @@ var view = {prog: null, progInfo: null};
 var activeBuffer;
 var fbs = new Array(2);
 
+var lastTime, curTime, deltaTime, elapsedTime = 0;
+
 function CreateFromShaders(obj, vertSrc, fragSrc)
 {
 	obj.prog = twgl.createProgramFromSources(gl, [vertSrc, fragSrc]);
@@ -45,6 +47,8 @@ function exportImg()
 	//document.getElementById("out").appendChild(FBtoTex(fbs[1].framebuffer));
 }
 
+
+
 function Setup(files)
 {
 	gl = twgl.getWebGLContext(wutils.dom.get("viewer"), {preserveDrawingBuffer:true});
@@ -82,22 +86,26 @@ function Setup(files)
     {
 
     }
-
+	
     function render(time) 
     {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
+		var v = wutils.conversion.hexToVec(sandColor.value);
       var uniforms = {
-        time: time * 0.001,
+      	  bgcol: wutils.conversion.hexToVec(backgroundColor.value),
+        sand_col_r: v[0],
+        sand_col_g: v[1],
+        sand_col_b: v[2],
+        time: time ,
         resolution: [gl.canvas.width, gl.canvas.height], 
         buffer_res: [bufferWidth, bufferHeight],
-        buffer: fbs[activeBuffer].attachments[0]  ,
+        buffer: fbs[activeBuffer].attachments[0],
 
         renderer_active: renderer.active,
 
-        document_bg_color: wutils.conversion.hexToVec(backgroundColor.value),
-        document_sand_color: wutils.conversion.hexToVec(sandColor.value),
+      
+        sand_rad: sandSize.value
       };
 
       activeBuffer = (activeBuffer + 1) % fbs.length;
@@ -128,10 +136,17 @@ function Setup(files)
     }
 
     function displayLoop(time) {
-      update(time);
-      render(time);
-      lateUpdate(time);
-      requestAnimationFrame(displayLoop);
+    	curTime = Date.now() / 1000;
+    	deltaTime = curTime - lastTime;
+    	if(deltaTime !== NaN && deltaTime < 1.0)
+    		elapsedTime += deltaTime;
+
+		update(elapsedTime);
+		render(elapsedTime);
+		lateUpdate(elapsedTime);
+
+		lastTime = curTime;
+		requestAnimationFrame(displayLoop);
     }
   requestAnimationFrame(displayLoop);
 }
