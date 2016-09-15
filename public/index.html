@@ -6,10 +6,12 @@
     <title>Sand.rs</title>
 
     <!-- Libraries -->
+    <script rel="text/javascript" src="lib/twgl-full.js"></script>
+    <script rel="text/javascript" src="lib/glMatrix.js"></script>
     <script rel="text/javascript" src="lib/wutils.js"></script>
-    <script rel="text/javascript" src="lib/twgl-full.min.js"></script>
 
     <!-- Scripts -->
+    <script type="text/javascript" src="js/input.js"></script>
     <script type="text/javascript" src="js/webgl.js"></script>
     <script rel="text/javascript" src="js/main.js"></script>
 
@@ -26,10 +28,10 @@
 
         <!-- Sidebar -->
         <div id="sidebar">
-          <p id="logo">Sand.art</p>
-          <p id="tagline">Created by Ben Skinner</p>
-          <hr/>
-          <div id="settings">
+            <p id="logo">Sand.art</p>
+            <p id="tagline">Created by Ben Skinner</p>
+            <hr/>
+            <div id="settings">
             <span><b>Settings</b></span>
             <table>
               <tr>
@@ -39,36 +41,37 @@
                 <td>Height: </td><td><input type="text" value="1024px"/></td>
               </tr>
             </table>
-          </div>
-          <hr/>
+            </div>
+            <hr/>
             <button onclick="renderer_toggle()">Toggle Renderer</button>
             <button onclick="renderer_reset()">Reset Renderer</button>
-          <hr/>
+            <hr/>
             <button onclick="renderer_export()">Export PNG</button>
-          <hr/>
-            <table>
-              <tr>  <!-- Background color row -->
-                <td>Background Color</td>
-                <td><input id="bgCol_input" type="color"/></td>
-                <td><input class="value_setter" type="text" id="bgCol_output"/></td>
-              </tr>
-              <tr>  <!-- Sand color row -->
-                <td>Sand Color</td>
-                <td><input id="sandCol_input" type="color"/></td>
-                <td><input class="value_setter" type="text" id="sandCol_output"/></td>
-              </tr>
-              <tr>  <!-- Sand size row -->
-                <td>Sand Size</td>
-                <td><input id="sandSize_input" type="range" min="0.0" max="1.0" step="0.001"/></td>
-                <td><input class="value_setter" type="text" id="sandSize_output"/></td>
-              </tr>
-              <tr>  <!-- Sand opacity row -->
-                <td>Sand Opacity</td>
-                <td><input id="sandOpacity_input" type="range" min="0.0" max="1.0" step="0.001"/></td>
-                <td><input class="value_setter" type="text" id="sandOpacity_output"/></td>
-              </tr>
-            </table>
-            
+            <hr/>
+                <table>
+                    <tr>  <!-- Background color row -->
+                        <td>Background Color</td>
+                        <td><input id="bgCol_input" type="color"/></td>
+                        <td><input class="value_setter" type="text" id="bgCol_output"/></td>
+                    </tr>
+                    <tr>  <!-- Sand color row -->
+                        <td>Sand Color</td>
+                        <td><input id="sandCol_input" type="color"/></td>
+                        <td><input class="value_setter" type="text" id="sandCol_output"/></td>
+                    </tr>
+                    <tr>  <!-- Sand size row -->
+                        <td>Sand Size</td>
+                        <td><input id="sandSize_input" type="range" min="0.002" max="0.5" step="0.00025"/></td>
+                    <td><input class="value_setter" type="text" id="sandSize_output"/></td>
+                    </tr>
+                    <tr>  <!-- Sand opacity row -->
+                        <td>Sand Opacity</td>
+                        <td><input id="sandOpacity_input" type="range" min="0.0025" max="1.0" step="0.00025"/></td>
+                        <td><input class="value_setter" type="text" id="sandOpacity_output"/></td>
+                    </tr>
+                </table>
+            <hr/> 
+            <textarea id="editor" rows="23">code...</textarea>
         </div>
 
         <!-- Renderer -->

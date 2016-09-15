@@ -1,5 +1,5 @@
-var bufferWidth = 512;
-var bufferHeight = 512;
+var bufferWidth = 2048;
+var bufferHeight = 2048;
 
 var renderer = {
 	active: true
@@ -11,24 +11,23 @@ var artboard = {
 	},
 	particle: {
 		colour: wutils.data.create("#fffaf5"),
-		radius: wutils.data.create(0.5),
-		opacity: wutils.data.create(0.6)
+		radius: wutils.data.create(0.05),
+		opacity: wutils.data.create(1.0)
 	}
 }
 
 
 
-function OnLoad()
-{
+function OnLoad() {
 	artboard.background.colour.inlet("bgCol_input");
 	artboard.background.colour.inlet("bgCol_output");
-	
+
 	artboard.particle.colour.inlet("sandCol_input");
 	artboard.particle.colour.inlet("sandCol_output");
 
 	artboard.particle.radius.inlet("sandSize_input");
 	artboard.particle.radius.inlet("sandSize_output");
-	
+
 	artboard.particle.opacity.inlet("sandOpacity_input");
 	artboard.particle.opacity.inlet("sandOpacity_output");
 
@@ -43,12 +42,10 @@ var shaders = wutils.file.loadMultiple(["shaders/vert.glsl", "shaders/frag.glsl"
 	Setup(files);
 });
 
-function renderer_toggle()
-{
+function renderer_toggle() {
 	renderer.active = !renderer.active;
 }
 
-function renderer_reset()
-{
+function renderer_reset() {
 	elapsedTime = 0;
 }

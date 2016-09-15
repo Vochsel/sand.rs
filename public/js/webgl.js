@@ -7,6 +7,10 @@ var fbs = new Array(2);
 
 var lastTime, curTime, deltaTime, elapsedTime = 0;
 
+var viewMat = mat3.create()
+var viewTrans = mat3.create()
+var viewScale = mat3.create()
+
 function CreateFromShaders(obj, vertSrc, fragSrc)
 {
 	obj.prog = twgl.createProgramFromSources(gl, [vertSrc, fragSrc]);
@@ -58,8 +62,8 @@ function Setup(files)
 	sand = CreateFromShaders(sand, files[0], files[1]);
 	view = CreateFromShaders(view, files[0], files[2]);
 
-	bufferWidth = gl.canvas.width;
-	bufferHeight = gl.canvas.height;
+	//bufferWidth = gl.canvas.width;
+	//bufferHeight = gl.canvas.height;
 
 	//console.log(bufferWidth)
 
@@ -80,11 +84,26 @@ function Setup(files)
     fbs[1] = twgl.createFramebufferInfo(gl, attachments, bufferWidth, bufferHeight);
 
 
+    gl.canvas.addEventListener("mousemove", function(e) {
+    	Mouse.get(e.offsetX, e.offsetY);
+    });
+
 	activeBuffer = 0;
+
+	Mouse.setup();
 
     function update(time) 
     {
-
+    	Mouse.update();
+    	if(Mouse.clicked)
+    	{
+    		mat3.translate(viewTrans, viewTrans, Mouse.delta);
+    		//console.log(viewMat)
+    	}
+    	//if(Math.abs(Mouse.scrollDelta) > 0.5);
+    		
+    	//console.log(viewMat);
+    	//console.log(Mouse.delta[0]);
     }
 	
     function render(time) 
@@ -93,7 +112,8 @@ function Setup(files)
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 		//var v = wutils.conversion.hexToVec(artboard.particle.colour.value);
 
-
+		//mat3.mul(viewMat, viewTrans, viewScale);
+		mat3.mul(viewMat, viewScale, viewTrans);
       var uniforms = {
   	  	bgcol: wutils.conversion.hexToVec(artboard.background.colour.value),
         sand_col: wutils.conversion.hexToVec(artboard.particle.colour.value),
@@ -105,6 +125,7 @@ function Setup(files)
 
         renderer_active: renderer.active,
 
+        view_mat: viewMat,
       
         sand_radius: artboard.particle.radius.value,
         sand_opacity: artboard.particle.opacity.value
@@ -134,7 +155,7 @@ function Setup(files)
     }
 
     function lateUpdate(time) {
-
+    	Mouse.lateUpdate();
     }
 
     function displayLoop(time) {

@@ -125,7 +125,7 @@ vec4 create(vec2 uv)
 
 
 void main() {
- 	if(time < 1.0) {
+ 	if(time < 0.25) {
         gl_FragColor = vec4(bgcol, 1.0);
         return;
     } 
