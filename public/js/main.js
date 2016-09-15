@@ -5,18 +5,34 @@ var renderer = {
 	active: true
 }
 
-var backgroundColor = wutils.data.create("#494746");
-var sandColor = wutils.data.create("#fffaf5");
-var sandSize = wutils.data.create(0.5);
+var artboard = {
+	background: {
+		colour: wutils.data.create("#494746")
+	},
+	particle: {
+		colour: wutils.data.create("#fffaf5"),
+		radius: wutils.data.create(0.5),
+		opacity: wutils.data.create(0.6)
+	}
+}
+
+
 
 function OnLoad()
 {
-	backgroundColor.inlet("bgColor");
-	backgroundColor.outlet(function(v) {
-		console.log(v);
-	})
-	sandColor.inlet("sandColor");
-	sandSize.inlet("sandSize");
+	artboard.background.colour.inlet("bgCol_input");
+	artboard.background.colour.inlet("bgCol_output");
+	
+	artboard.particle.colour.inlet("sandCol_input");
+	artboard.particle.colour.inlet("sandCol_output");
+
+	artboard.particle.radius.inlet("sandSize_input");
+	artboard.particle.radius.inlet("sandSize_output");
+	
+	artboard.particle.opacity.inlet("sandOpacity_input");
+	artboard.particle.opacity.inlet("sandOpacity_output");
+
+
 
 }
 

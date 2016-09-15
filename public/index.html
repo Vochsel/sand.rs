@@ -46,11 +46,29 @@
           <hr/>
             <button onclick="renderer_export()">Export PNG</button>
           <hr/>
-            <p>Background Colour</p>
-            <input id="bgColor" type="color"/>
-            <p>Sand Colour</p>
-            <input id="sandColor" type="color"/>
-            <input id="sandSize" type="range" min="0.0" max="1.0" step="0.001"/>
+            <table>
+              <tr>  <!-- Background color row -->
+                <td>Background Color</td>
+                <td><input id="bgCol_input" type="color"/></td>
+                <td><input class="value_setter" type="text" id="bgCol_output"/></td>
+              </tr>
+              <tr>  <!-- Sand color row -->
+                <td>Sand Color</td>
+                <td><input id="sandCol_input" type="color"/></td>
+                <td><input class="value_setter" type="text" id="sandCol_output"/></td>
+              </tr>
+              <tr>  <!-- Sand size row -->
+                <td>Sand Size</td>
+                <td><input id="sandSize_input" type="range" min="0.0" max="1.0" step="0.001"/></td>
+                <td><input class="value_setter" type="text" id="sandSize_output"/></td>
+              </tr>
+              <tr>  <!-- Sand opacity row -->
+                <td>Sand Opacity</td>
+                <td><input id="sandOpacity_input" type="range" min="0.0" max="1.0" step="0.001"/></td>
+                <td><input class="value_setter" type="text" id="sandOpacity_output"/></td>
+              </tr>
+            </table>
+            
         </div>
 
         <!-- Renderer -->

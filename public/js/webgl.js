@@ -91,21 +91,23 @@ function Setup(files)
     {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-		var v = wutils.conversion.hexToVec(sandColor.value);
+		//var v = wutils.conversion.hexToVec(artboard.particle.colour.value);
+
+
       var uniforms = {
-      	  bgcol: wutils.conversion.hexToVec(backgroundColor.value),
-        sand_col_r: v[0],
-        sand_col_g: v[1],
-        sand_col_b: v[2],
+  	  	bgcol: wutils.conversion.hexToVec(artboard.background.colour.value),
+        sand_col: wutils.conversion.hexToVec(artboard.particle.colour.value),
+
         time: time ,
         resolution: [gl.canvas.width, gl.canvas.height], 
         buffer_res: [bufferWidth, bufferHeight],
-        buffer: fbs[activeBuffer].attachments[0],
+        buf: fbs[activeBuffer].attachments[0],
 
         renderer_active: renderer.active,
 
       
-        sand_rad: sandSize.value
+        sand_radius: artboard.particle.radius.value,
+        sand_opacity: artboard.particle.opacity.value
       };
 
       activeBuffer = (activeBuffer + 1) % fbs.length;

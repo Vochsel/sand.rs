@@ -1,19 +1,19 @@
 precision mediump float;
 
 
-uniform float sand_col_r;
-uniform float sand_col_g;
-uniform float sand_col_b;
-uniform float sand_rad;
+uniform vec3 sand_col;
+uniform float sand_radius;
+uniform float sand_opacity;
 
 uniform vec2 resolution;
 uniform vec2 buffer_res;
+
 uniform float time;
 
 uniform bool renderer_active;
 uniform vec3 bgcol;
 
-uniform sampler2D buffer;
+uniform sampler2D buf;
 
 
 
@@ -28,7 +28,7 @@ uniform sampler2D buffer;
 // Shadertoy Specific
 #define TX(ch, uv) texture2D(ch, uv)
 
-#define CH0(uv) TX(buffer, uv)
+#define CH0(uv) TX(buf, uv)
 
 float rand(vec2 co){
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -42,10 +42,10 @@ float rand(float c){
 /* ================Shader Variables ============= */
 
 #define BG vec3(0.9)
-#define GRAIN_SIZE sand_rad * 0.1
-#define SAND_OPACITY 0.1
+#define GRAIN_SIZE sand_radius * 0.1
+#define SAND_OPACITY sand_opacity
 #define SAND_AMT 100
-#define SAND_COL vec3(sand_col_r, sand_col_g, sand_col_b)
+#define SAND_COL sand_col
 
 /* ===================== Shader ================= */
 
