@@ -21,7 +21,7 @@ var Mouse = {
 			var scrollAmount = 0.1 * scrollDir;
 			var scrollScale = 1 + scrollAmount;
 			var temp = mat3.create(1, 1, 1);
-			mat3.translate(viewScale, viewScale, [-Mouse.pos[0] / gl.canvas.width, Mouse.pos[1] / gl.canvas.height]);
+			//mat3.translate(viewScale, viewScale, [-Mouse.pos[0] / gl.canvas.width, Mouse.pos[1] / gl.canvas.height]);
 			mat3.scale(viewScale, viewScale, [scrollScale, scrollScale]);
 			//Mouse.clicked = false;
 		})

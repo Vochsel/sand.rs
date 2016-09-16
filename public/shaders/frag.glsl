@@ -1,5 +1,22 @@
 precision mediump float;
 
+/* ========== Shader Lib - Ben Skinner ========== */
+
+// Universal
+#define rgb(r, g, b) vec3(float(r)/255., float(g)/255., float(b)/255.)
+
+#define PI  3.14159265359
+#define PI2 6.28318530718
+
+// Shadertoy Specific
+#define TX(ch, uv) texture2D(ch, uv)
+
+#define CH0(uv) TX(buf, uv)
+
+float rand(vec2 co){ return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+float rand(float c){ vec2 co = vec2(c); return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+
+/* ==================== Uniforms ================= */
 
 uniform vec3 sand_col;
 uniform float sand_radius;
@@ -15,31 +32,7 @@ uniform vec3 bgcol;
 
 uniform sampler2D buf;
 
-
-
-/* ========== Shader Lib - Ben Skinner ========== */
-
-// Universal
-#define rgb(r, g, b) vec3(float(r)/255., float(g)/255., float(b)/255.)
-
-#define PI  3.14159265359
-#define PI2 6.28318530718
-
-// Shadertoy Specific
-#define TX(ch, uv) texture2D(ch, uv)
-
-#define CH0(uv) TX(buf, uv)
-
-float rand(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-float rand(float c){
-    vec2 co = vec2(c);
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
-}
-
-/* ================Shader Variables ============= */
+/* ================ Shader Variables ============= */
 
 #define BG vec3(0.9)
 #define GRAIN_SIZE sand_radius * 0.1
@@ -47,7 +40,7 @@ float rand(float c){
 #define SAND_AMT 100
 #define SAND_COL sand_col
 
-/* ===================== Shader ================= */
+/* =================== Functions ================ */
 
 vec4 circle(vec2 uv, vec2 p, vec3 col, float r)
 {
@@ -104,7 +97,6 @@ vec2 formula(vec2 uv, float p)
     return o;
 }
 
-
 vec4 create(vec2 uv)
 {
     vec4 value = vec4(0.0);
@@ -123,6 +115,7 @@ vec4 create(vec2 uv)
     return value;
 }
 
+/* ===================== Main =================== */
 
 void main() {
  	if(time < 0.25) {

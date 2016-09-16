@@ -51,6 +51,53 @@ function exportImg()
 	//document.getElementById("out").appendChild(FBtoTex(fbs[1].framebuffer));
 }
 
+function CreateFramebuffers(width, height)
+{
+    var attachments = [
+        { format: gl.RGBA, type: gl.UNSIGNED_BYTE, min: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE, },
+        { format: gl.DEPTH_STENCIL, },
+    ];
+
+    fbs[0] = twgl.createFramebufferInfo(gl, attachments, width, height);
+    fbs[1] = twgl.createFramebufferInfo(gl, attachments, width, height);
+
+    renderer_reset();
+}
+
+function CompileShader(progObj, strings)
+{
+    var shader = wutils.string.combine(strings);
+    progObj = CreateFromShaders(progObj, vertShader, shader);
+    return progObj
+}
+
+var vertShader = "";
+
+var fragHeader = "";
+var fragFunctions = "";
+var fragMain = "";
+var fragFormula = wutils.data.create("vec2 formula(vec2 uv, float p)\n" + 
+"{\n" + 
+"    vec2 o = vec2(0.0, 0.0);\n" + 
+"\n" + 
+"    return o;\n" + 
+"}\n");
+
+
+/*
+
+vec2 formula(vec2 uv, float p)
+{
+    p = p * 4.0 - 2.0;
+    float particleRand = rand(p * time * 0.01);
+    float offset = particleRand * sin(p);
+    float r = (-time / PI / 100.0) + 0.5 + offset;
+    vec2 o = vec2(sin(particleRand) * r, cos(particleRand) * r);
+
+    return o;
+}
+
+*/
 
 
 function Setup(files)
@@ -59,6 +106,12 @@ function Setup(files)
 	
 	twgl.resizeCanvasToDisplaySize(gl.canvas);
 	
+    vertShader = files[0];
+
+    fragHeader = files[3];
+    fragFunctions = files[4];
+    fragMain = files[5];
+
 	sand = CreateFromShaders(sand, files[0], files[1]);
 	view = CreateFromShaders(view, files[0], files[2]);
 
@@ -74,15 +127,19 @@ function Setup(files)
     var bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
     //var fbs = new Array(2);
-	var attachments = [
-		{ format: gl.RGBA, type: gl.UNSIGNED_BYTE, min: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE, },
-		{ format: gl.DEPTH_STENCIL, },
-	];
-
 	
-    fbs[0] = twgl.createFramebufferInfo(gl, attachments, bufferWidth, bufferHeight);
-    fbs[1] = twgl.createFramebufferInfo(gl, attachments, bufferWidth, bufferHeight);
+    CreateFramebuffers(bufferWidth, bufferHeight);
+    artboard.width.outlet(function(val) {
+        CreateFramebuffers(val, artboard.height.value);
+    });
+    artboard.height.outlet(function(val) {
+        CreateFramebuffers(artboard.width.value, val);
+    });
 
+    fragFormula.inlet("editor_input");
+    fragFormula.outlet(function(val) {
+        CompileShader(sand, [fragHeader, fragFunctions, val, fragMain]);
+    });
 
     gl.canvas.addEventListener("mousemove", function(e) {
     	Mouse.get(e.offsetX, e.offsetY);
@@ -113,23 +170,27 @@ function Setup(files)
 		//var v = wutils.conversion.hexToVec(artboard.particle.colour.value);
 
 		//mat3.mul(viewMat, viewTrans, viewScale);
+
+        bufferWidth = artboard.width.value;
+        bufferHeight = artboard.height.value;
+
 		mat3.mul(viewMat, viewScale, viewTrans);
-      var uniforms = {
-  	  	bgcol: wutils.conversion.hexToVec(artboard.background.colour.value),
-        sand_col: wutils.conversion.hexToVec(artboard.particle.colour.value),
+        var uniforms = {
+        	bgcol: wutils.conversion.hexToVec(artboard.background.colour.value),
+            sand_col: wutils.conversion.hexToVec(artboard.particle.colour.value),
 
-        time: time ,
-        resolution: [gl.canvas.width, gl.canvas.height], 
-        buffer_res: [bufferWidth, bufferHeight],
-        buf: fbs[activeBuffer].attachments[0],
+            time: time ,
+            resolution: [gl.canvas.width, gl.canvas.height], 
+            buffer_res: [bufferWidth, bufferHeight],
+            buf: fbs[activeBuffer].attachments[0],
 
-        renderer_active: renderer.active,
+            renderer_active: renderer.active,
 
-        view_mat: viewMat,
-      
-        sand_radius: artboard.particle.radius.value,
-        sand_opacity: artboard.particle.opacity.value
-      };
+            view_mat: viewMat,
+
+            sand_radius: artboard.particle.radius.value,
+            sand_opacity: artboard.particle.opacity.value
+        };
 
       activeBuffer = (activeBuffer + 1) % fbs.length;
 
