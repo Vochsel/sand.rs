@@ -2,11 +2,11 @@ vec4 create(vec2 uv)
 {
     vec4 value = vec4(0.0);
     
-    float amt = float(SAND_AMT);
+    float amt = float(SAND_AMT) / PI;
     vec3 c = vec3(SAND_COL.r, SAND_COL.g, SAND_COL.b);
     for(int i = 0; i < SAND_AMT; ++i)
     {
-        vec4 c = circle(uv, formula(uv, float(i) / amt), SAND_COL, GRAIN_SIZE);   
+        vec4 c = circle(uv, formula(uv, (float(i) / amt) * 2.0 - 1.0), SAND_COL, GRAIN_SIZE);   
         value.rgb = mix(value.rgb, c.rgb, 0.5);
         value.w += c.w;
         //value.w = mix(value.w, c.w, 0.05);

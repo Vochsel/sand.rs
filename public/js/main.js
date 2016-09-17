@@ -65,3 +65,7 @@ function renderer_toggle() {
 function renderer_reset() {
 	elapsedTime = 0;
 }
+
+function renderer_export() {
+	exportImg();
+}

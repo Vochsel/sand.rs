@@ -20,6 +20,9 @@ function CreateFromShaders(obj, vertSrc, fragSrc)
 
 function FBtoTex(fb)
 {
+    bufferWidth = artboard.width.value;
+	bufferHeight = artboard.height.value;
+	//console.log(fb);
 	//gl.viewport(0, 0, 100, 100);
 	twgl.bindFramebufferInfo(gl, fb);
 	var data = new Uint8Array(bufferWidth * bufferHeight * 4);
@@ -31,12 +34,11 @@ function FBtoTex(fb)
 	can.height = bufferHeight;
 
 	var ctx = can.getContext('2d');
-
 	var imageData = ctx.createImageData(bufferWidth, bufferHeight);
 	imageData.data.set(data);
 
 	ctx.putImageData(imageData, 0, 0);
-	document.getElementById("out").appendChild(can);
+	//document.getElementById("out").appendChild(can);
 	var img = new Image();
 	img.src = can.toDataURL();
 
@@ -47,14 +49,14 @@ function FBtoTex(fb)
 
 function exportImg()
 {
-	window.open(FBtoTex(fbs[1].framebuffer).src)
+	window.open(FBtoTex(fbs[1]).src)
 	//document.getElementById("out").appendChild(FBtoTex(fbs[1].framebuffer));
 }
 
 function CreateFramebuffers(width, height)
 {
     var attachments = [
-        { format: gl.RGBA, type: gl.UNSIGNED_BYTE, min: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE, },
+        { format: gl.RGBA, type: gl.UNSIGNED_BYTE, min: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE, flipY : 1},
         { format: gl.DEPTH_STENCIL, },
     ];
 
@@ -76,12 +78,7 @@ var vertShader = "";
 var fragHeader = "";
 var fragFunctions = "";
 var fragMain = "";
-var fragFormula = wutils.data.create("vec2 formula(vec2 uv, float p)\n" + 
-"{\n" + 
-"    vec2 o = vec2(0.0, 0.0);\n" + 
-"\n" + 
-"    return o;\n" + 
-"}\n");
+var fragFormula = wutils.data.create("vec2 formula(vec2 uv, float p){    float prand = rand(p * time * 0.01) ;    float w = p * 0.1;    float rad = sin(time * p) * w + 0.5;    vec2 o = vec2(0.0, 0.0);    o.x = sin(p + prand) * rad;    o.y = cos(p + prand) * rad;    return o;}");
 
 
 /*
@@ -96,6 +93,22 @@ vec2 formula(vec2 uv, float p)
 
     return o;
 }
+
+vec2 formula(vec2 uv, float p)
+{
+    float prand = rand(p * time * 0.01) ;
+
+    float w = p * 0.1;
+
+    float rad = sin(time * p) * w + 0.5;
+
+    vec2 o = vec2(0.0, 0.0);
+    o.x = sin(p + prand) * rad;
+    o.y = cos(p + prand) * rad;
+
+    return o;
+}
+
 
 */
 
