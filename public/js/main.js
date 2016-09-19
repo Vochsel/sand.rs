@@ -18,7 +18,7 @@ var artboard = {
 	height: wutils.data.create(720),
 }
 
-
+var editor;
 
 
 function OnLoad() {
@@ -43,7 +43,8 @@ function OnLoad() {
 		//viewMat = mat3.create();
 		console.log(viewMat);
 	});
-
+	
+	editor = CodeMirror.fromTextArea(wutils.dom.get("editor_input"), {value:"vec2 formula(vec2 uv, float p){\n    float prand = rand(p * time * 0.01);\n    float w = p * 0.1;\n    float rad = sin(time * p) * w + 0.5;\n\n    vec2 o = vec2(0.0, 0.0);\n    o.x = sin(p + prand) * rad;\n    o.y = cos(p + prand) * rad;\n\n    return o;\n}", mode: 'text/x-glsl'});
 
 }
 

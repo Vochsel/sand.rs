@@ -149,9 +149,11 @@ function Setup(files)
         CreateFramebuffers(artboard.width.value, val);
     });
 
-    fragFormula.inlet("editor_input");
+    fragFormula.inlet("CodeMirror", "keydown");
+
     fragFormula.outlet(function(val) {
-        CompileShader(sand, [fragHeader, fragFunctions, val, fragMain]);
+        console.log("G");
+        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
     });
 
     gl.canvas.addEventListener("mousemove", function(e) {

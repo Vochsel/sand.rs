@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+
+	<link rel="stylesheet" type="text/css" href="lib/codemirror/codemirror.css"/>
+	<script type="text/javascript" src="lib/codemirror/codemirror.js"></script>
+	<script type="text/javascript" src="lib/codemirror/modes/glsl/glsl.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+	var myCodeMirror = CodeMirror(document.body, {
+  value: "void mainImage( out vec4 fragColor, in vec2 fragCoord )\n{\n	vec2 uv = fragCoord.xy / iResolution.xy;\n	fragColor = vec4(uv,0.5+0.5*sin(iGlobalTime),1.0);\n}",
+  mode:  "text/x-glsl"
+});
+</script>
+</body>
+</html>
