@@ -150,9 +150,16 @@ function Setup(files)
     });
 
     fragFormula.inlet("CodeMirror", "keydown");
+    fragFormula.inlet("CodeMirror", "input");
+
+    editor.on('keyup', function(instance, e) {
+    //console.log(e);
+    //  compile_code(editor.getValue());
+        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+    });
 
     fragFormula.outlet(function(val) {
-        console.log("G");
+       
         CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
     });
 
