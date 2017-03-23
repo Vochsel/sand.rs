@@ -1,0 +1,9 @@
+{
+	"name" : "sand.rs",
+	"version" : "1.0.0",
+	"description" : "Sand art generator",
+	"dependencies" :
+	{
+		"express" : "4.15.2"
+	}
+}
