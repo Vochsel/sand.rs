@@ -151,17 +151,17 @@ function Setup(files)
 
     fragFormula.inlet("CodeMirror", "keydown");
     fragFormula.inlet("CodeMirror", "input");
-
-    editor.on('keyup', function(instance, e) {
+    console.log(editor);
+    //editor.on('keyup', function(instance, e) {
     //console.log(e);
     //  compile_code(editor.getValue());
-        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
-    });
+      //  CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+    //});
 
-    fragFormula.outlet(function(val) {
+    //fragFormula.outlet(function(val) {
        
-        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
-    });
+    //    CompileShader(sand, [fragHeader, fragFunctions, fragFormula.value, fragMain]);
+    //});
 
     gl.canvas.addEventListener("mousemove", function(e) {
     	Mouse.get(e.offsetX, e.offsetY);
