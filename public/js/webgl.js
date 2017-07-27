@@ -116,9 +116,9 @@ vec2 formula(vec2 uv, float p)
 function Setup(files)
 {
 	gl = twgl.getWebGLContext(wutils.dom.get("viewer"), {preserveDrawingBuffer:true});
-	
+
 	twgl.resizeCanvasToDisplaySize(gl.canvas);
-	
+
     vertShader = files[0];
 
     fragHeader = files[3];
@@ -140,7 +140,7 @@ function Setup(files)
     var bufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
     //var fbs = new Array(2);
-	
+
     CreateFramebuffers(bufferWidth, bufferHeight);
     artboard.width.outlet(function(val) {
         CreateFramebuffers(val, artboard.height.value);
@@ -152,15 +152,15 @@ function Setup(files)
     fragFormula.inlet("CodeMirror", "keydown");
     fragFormula.inlet("CodeMirror", "input");
 
-    editor.on('keyup', function(instance, e) {
+    //editor.on('keyup', function(instance, e) {
     //console.log(e);
     //  compile_code(editor.getValue());
-        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
-    });
+    //    CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+    //});
 
     fragFormula.outlet(function(val) {
-       
-        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+
+        //CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
     });
 
     gl.canvas.addEventListener("mousemove", function(e) {
@@ -171,21 +171,23 @@ function Setup(files)
 
 	Mouse.setup();
 
-    function update(time) 
+    function update(time)
     {
     	Mouse.update();
     	if(Mouse.clicked)
     	{
     		mat3.translate(viewTrans, viewTrans, Mouse.delta);
-    		//console.log(viewMat)
+            //console.log(viewMat)
+            console.log("x: " + viewTrans[6]);
+            console.log("y: " + viewTrans[7]);
     	}
     	//if(Math.abs(Mouse.scrollDelta) > 0.5);
-    		
+
     	//console.log(viewMat);
     	//console.log(Mouse.delta[0]);
     }
-	
-    function render(time) 
+
+    function render(time)
     {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -202,7 +204,7 @@ function Setup(files)
             sand_col: wutils.conversion.hexToVec(artboard.particle.colour.value),
 
             time: time ,
-            resolution: [gl.canvas.width, gl.canvas.height], 
+            resolution: [gl.canvas.width, gl.canvas.height],
             buffer_res: [bufferWidth, bufferHeight],
             buf: fbs[activeBuffer].attachments[0],
 
@@ -222,7 +224,7 @@ function Setup(files)
 	    	gl.useProgram(sand.progInfo.program);
 	    	twgl.setBuffersAndAttributes(gl, sand.progInfo, bufferInfo);
 	      	twgl.setUniforms(sand.progInfo, uniforms);
- 			
+
  		  	twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
 
       	twgl.bindFramebufferInfo(gl, null);
@@ -233,7 +235,7 @@ function Setup(files)
 
 		gl.useProgram(view.progInfo.program);
 		twgl.setUniforms(view.progInfo, uniforms);
- 
+
 	    twgl.drawBufferInfo(gl, gl.TRIANGLES, bufferInfo);
     }
 

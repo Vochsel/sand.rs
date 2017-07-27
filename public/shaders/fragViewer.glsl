@@ -30,7 +30,7 @@ void main() {
     vec2 uv = sc;
     uv.x *= aspect;
     vec2 bufCoord = sc;// * 2.0 - 1.0;
-    bufCoord.x *= aspect / buffer_aspect;
+    //bufCoord.x *= aspect / buffer_aspect;
 
     vec3 m = vec3(bufCoord, 1.0);
     m = view_mat * m;
