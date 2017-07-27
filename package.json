@@ -1,5 +1,6 @@
 {
 	"name" : "sand.rs",
+<<<<<<< HEAD
 	"version" : "1.0.0",
 	"description" : "Sand art generator",
 	"dependencies" :
@@ -7,3 +8,13 @@
 		"express" : "4.15.2"
 	}
 }
+=======
+	"version" : "1.1.0",
+	"license" : "MIT License",
+	"description" : "Generative sand art",
+	"dependencies" :
+	{
+		"express": "4.15.2"
+	}
+}
+>>>>>>> e7bc9f348187fe36385b00a735f8c7701b58e3a8
