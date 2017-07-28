@@ -77,16 +77,36 @@
                     </tr>
                 </table>
             <hr/> 
-            <textarea id="editor_input" cols="40" rows="23">vec2 formula(vec2 uv, float p){
-    float prand = rand(p * time * 0.01);
-    float w = sin(p * 4.0) * 0.05;
-    float rad = 0.5 + w;
+            <textarea id="editor_input" cols="40" rows="23">/*
+struct Sand {
+	float size;
+	float opacity;
+	vec2 pos;
+	vec3 col;
+}
+*/
 
-    vec2 o = vec2(0.0, 0.0);
-    o.x = sin(p + prand) * rad;
-    o.y = cos(p + prand) * rad;
-    return o;
+void formula(vec2 uv, float p, out Sand s){
 
+  	float v = time;
+  
+  	float radius = 0.5 - rand(p) + sin(time) * 0.5;
+  
+  	float xx = sin(time + p) * radius;
+  	float yy = cos(time + p) * radius;
+  
+  	float aa = (atan(-yy, xx) + 3.1415);
+	
+  	float arand = (rand(aa) / 10.0) /10.;
+  
+  	s.size = arand;
+  
+  	s.col = vec3(sin(time * 0.2) + 0.5, cos(time * 0.1) + 0.5, 0.5);
+  
+  	s.opacity = 0.05;
+  
+  	s.pos.x = xx;
+  	s.pos.y = yy;
 }</textarea>
         </div>
 
@@ -98,3 +118,34 @@
     </div>
   </body>
 </html>
+
+
+<!--
+  /*
+struct Sand {
+	float size;
+	float opacity;
+	vec2 pos;
+	vec3 col;
+}
+*/
+
+void formula(vec2 uv, float p, out Sand s){
+    float prand = rand(p * time * 0.01);
+  	float orand = rand(time);
+    float w = sin(prand * 4.0) * 0.5;
+    float rad = 0.45 + w;
+
+  	s.col.x = uv.x + 0.95;
+  	s.col.y = uv.y + 0.95;
+  	s.col.z = 1.;
+
+  	//s.opacity = 0.5 * prand;
+  
+  	float xx = rand(orand) * 0.05;
+  	float yy = rand(orand) * 0.05;
+  
+    s.pos.x = xx + sin(p + prand + w) * rad;
+    s.pos.y = yy + cos(p + prand - w) * rad;
+}
+  -->

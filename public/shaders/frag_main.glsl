@@ -3,12 +3,23 @@ vec4 create(vec2 uv)
     vec4 value = vec4(0.0);
     
     float amt = float(SAND_AMT) / PI;
+
     vec3 c = vec3(SAND_COL.r, SAND_COL.g, SAND_COL.b);
+    
     for(int i = 0; i < SAND_AMT; ++i)
     {
-        vec4 c = circle(uv, formula(uv, (float(i) / amt) * 2.0 - 1.0), SAND_COL, GRAIN_SIZE);   
-        value.rgb = mix(value.rgb, c.rgb, 0.5);
-        value.w += c.w;
+        Sand outSand;
+        outSand.pos = vec2(0.0);
+        outSand.size = GRAIN_SIZE;
+        outSand.col = vec3(SAND_COL.r, SAND_COL.g, SAND_COL.b);
+        outSand.opacity = SAND_OPACITY;
+
+        formula(uv, (float(i) / amt) * 2.0 - 1.0, outSand);
+
+        vec4 c = circle(uv, outSand.pos, SAND_COL, outSand.size);   
+        
+        value.rgb = mix(value.rgb, outSand.col, 0.5);
+        value.w += c.w * outSand.opacity;
         //value.w = mix(value.w, c.w, 0.05);
     }
     value.w = clamp(value.w, 0.0, 0.9);

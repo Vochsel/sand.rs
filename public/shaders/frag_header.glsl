@@ -40,3 +40,9 @@ uniform sampler2D buf;
 #define SAND_AMT 100
 #define SAND_COL sand_col
 
+struct Sand {
+    float size;
+    float opacity;
+    vec2 pos;
+    vec3 col;
+};

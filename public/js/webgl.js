@@ -169,6 +169,9 @@ function Setup(files)
         CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
     });
 
+    CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+
+
     //fragFormula.outlet(function(val) {
        
     //    CompileShader(sand, [fragHeader, fragFunctions, fragFormula.value, fragMain]);
