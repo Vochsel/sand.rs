@@ -30,7 +30,8 @@ void main() {
     vec2 uv = sc;
     uv.x *= aspect;
     vec2 bufCoord = sc;// * 2.0 - 1.0;
-    //bufCoord.x *= aspect / buffer_aspect;
+    
+    //bufCoord.x *= aspect / buffer_aspect; //Needed but broken
 
     vec3 m = vec3(bufCoord, 1.0);
     m = view_mat * m;
@@ -43,7 +44,7 @@ void main() {
     //m.y = 1.0 - m.y;
     vec3 sample = texture2D(buf, m.xy).xyz;
 
-    col = mix(col, sample, insideBox(m.xy, vec2(0.0), vec2(1.0)));
+    col = mix(col, sample, insideBox(m.xy * vec2(aspect / buffer_aspect,1.0), vec2(0.0), vec2(1.0)));
 
     gl_FragColor = vec4(col, 1.0);
 }
