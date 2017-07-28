@@ -159,15 +159,15 @@ function Setup(files)
     //});
 
     fragFormula.outlet(function(val) {
-
-        //CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+        //console.log(val)
+       // CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
     });
     console.log(editor);
-    //editor.on('keyup', function(instance, e) {
+    editor.on('keyup', function(instance, e) {
     //console.log(e);
     //  compile_code(editor.getValue());
-      //  CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
-    //});
+        CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
+    });
 
     //fragFormula.outlet(function(val) {
        
@@ -189,8 +189,8 @@ function Setup(files)
     	{
     		mat3.translate(viewTrans, viewTrans, Mouse.delta);
             //console.log(viewMat)
-            console.log("x: " + viewTrans[6]);
-            console.log("y: " + viewTrans[7]);
+            //console.log("x: " + viewTrans[6]);
+            //console.log("y: " + viewTrans[7]);
     	}
     	//if(Math.abs(Mouse.scrollDelta) > 0.5);
 

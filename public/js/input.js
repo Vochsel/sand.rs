@@ -16,7 +16,7 @@ var Mouse = {
 
 		window.addEventListener("mousewheel", function(e) {
 			e.preventDefault();
-			console.log(e);
+			//console.log(e);
 			var scrollDir = e.deltaY * 0.01;
 
 			var scrollAmount = 0.1 * scrollDir;
@@ -40,8 +40,8 @@ var Mouse = {
 		this.delta[0] = -(this.pos[0] - this.last[0]);
 		this.delta[1] = (this.pos[1] - this.last[1]);
 
-		console.log(this.pos);
-		console.log(gl.canvas.width + " : " + gl.canvas.height);
+		//console.log(this.pos);
+		//console.log(gl.canvas.width + " : " + gl.canvas.height);
 	},
 	lateUpdate: function() {
 		//Mouse.scrollDelta = 0;

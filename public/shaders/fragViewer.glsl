@@ -42,7 +42,7 @@ void main() {
     float g = grid(q);
     vec3 col = vec3(g * 0.05 + 0.75);
     //m.y = 1.0 - m.y;
-    vec3 sample = texture2D(buf, m.xy).xyz;
+    vec3 sample = texture2D(buf, m.xy* vec2(aspect / buffer_aspect,1.0)).xyz;
 
     col = mix(col, sample, insideBox(m.xy * vec2(aspect / buffer_aspect,1.0), vec2(0.0), vec2(1.0)));
 
