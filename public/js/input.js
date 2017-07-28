@@ -14,7 +14,7 @@ var Mouse = {
 			Mouse.clicked = false;
 		})
 
-		window.addEventListener("mousewheel", function(e) {
+		gl.canvas.addEventListener("mousewheel", function(e) {
 			e.preventDefault();
 			//console.log(e);
 			var scrollDir = e.deltaY * 0.01;

@@ -21,6 +21,7 @@ html, body, #app {
   width: 20%;
   display: table-cell;
   margin-top: 0;
+  overflow: scroll;
 }
 
 #viewer {

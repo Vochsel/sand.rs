@@ -2,7 +2,7 @@ vec4 create(vec2 uv)
 {
     vec4 value = vec4(0.0);
     
-    float amt = float(SAND_AMT) / PI;
+    float amt = float(SAND_AMT);
 
     vec3 c = vec3(SAND_COL.r, SAND_COL.g, SAND_COL.b);
     

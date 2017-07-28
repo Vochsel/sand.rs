@@ -10,7 +10,7 @@ var artboard = {
 		colour: wutils.data.create("#494746")
 	},
 	particle: {
-		colour: wutils.data.create("#fffaf5"),
+		colour: wutils.data.create("#ffe8c4"),
 		radius: wutils.data.create(0.02),
 		opacity: wutils.data.create(1.0)
 	},

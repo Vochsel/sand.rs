@@ -97,11 +97,11 @@ void formula(vec2 uv, float p, out Sand s){
   
   	float aa = (atan(-yy, xx) + 3.1415);
 	
-  	float arand = (rand(aa) / 10.0) /10.;
+  	float arand = (rand(aa) / 10.0) /20.;
   
   	s.size = arand;
   
-  	s.col = vec3(sin(time * 0.2) + 0.5, cos(time * 0.1) + 0.5, 0.5);
+  	//s.col = vec3(sin(time * 0.2) + 0.5, cos(time * 0.1) + 0.5, 0.5);
   
   	s.opacity = 0.05;
   

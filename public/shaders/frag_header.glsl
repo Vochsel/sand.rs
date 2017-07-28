@@ -37,7 +37,7 @@ uniform sampler2D buf;
 #define BG vec3(0.9)
 #define GRAIN_SIZE sand_radius * 0.1
 #define SAND_OPACITY sand_opacity
-#define SAND_AMT 100
+#define SAND_AMT 500
 #define SAND_COL sand_col
 
 struct Sand {

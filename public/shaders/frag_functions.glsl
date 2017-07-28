@@ -3,7 +3,8 @@
 vec4 circle(vec2 uv, vec2 p, vec3 col, float r)
 {
     float l = length(uv - p);
-    float c = smoothstep(r, r - 0.01, l);
+    //float c = smoothstep(r, r - 0.0025, l);
+	float c = smoothstep(r, r - 0.00025, l);
     
     return vec4(col, c);
 }
