@@ -77,42 +77,12 @@
                     </tr>
                 </table>
             <hr/> 
-            <textarea id="editor_input" cols="40" rows="23">/*
-struct Sand {
-	float size;
-	float opacity;
-	vec2 pos;
-	vec3 col;
-}
-*/
-
-void formula(vec2 uv, float p, out Sand s){
-
-  	float v = time;
-  
-  	float radius = 0.5 - rand(p) + sin(time) * 0.5;
-  
-  	float xx = sin(time + p) * radius;
-  	float yy = cos(time + p) * radius;
-  
-  	float aa = (atan(-yy, xx) + 3.1415);
-	
-  	float arand = (rand(aa) / 10.0) /20.;
-  
-  	s.size = arand;
-  
-  	//s.col = vec3(sin(time * 0.2) + 0.5, cos(time * 0.1) + 0.5, 0.5);
-  
-  	s.opacity = 0.05;
-  
-  	s.pos.x = xx;
-  	s.pos.y = yy;
-}</textarea>
+            <textarea id="editor_input" cols="40" rows="23">/* If you are seeing this, no default sand art could be loaded */ void formula(vec2 uv, float p, out Sand s){ s.pos.x = 0; s.pos.y = 0; }</textarea>
         </div>
 
         <!-- Renderer -->
-        <div id="panel">
-            <canvas id="viewer" width="100%" height="100%"></canvas>
+        <div id="viewer">
+            <canvas id="viewer_canvas" width="100%" height="100%"></canvas>
         </div>
       </div>
     </div>

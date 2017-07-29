@@ -115,7 +115,7 @@ vec2 formula(vec2 uv, float p)
 
 function Setup(files)
 {
-	gl = twgl.getWebGLContext(wutils.dom.get("viewer"), {preserveDrawingBuffer:true});
+	gl = twgl.getWebGLContext(wutils.dom.get("viewer_canvas"), {preserveDrawingBuffer:true});
 
 	twgl.resizeCanvasToDisplaySize(gl.canvas);
 
