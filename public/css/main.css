@@ -11,10 +11,11 @@ html, body, #app {
 
 #container
 {
+  height: 100vh;
 }
 
 .CodeMirror {
-  height: 325px;
+  height: 39vh;
 }
 
 #sidebar {

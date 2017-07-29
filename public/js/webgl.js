@@ -33,11 +33,18 @@ function FBtoTex(fb)
 	can.width = bufferWidth;
 	can.height = bufferHeight;
 
+
+    const w = bufferWidth, h = bufferHeight;
+    
+    //Flip data
+    Array.from({length: h}, (val, i) => data.slice(i * w * 4, (i + 1) * w * 4))
+            .forEach((val, i) => data.set(val, (h - i - 1) * w * 4));
+
 	var ctx = can.getContext('2d');
 	var imageData = ctx.createImageData(bufferWidth, bufferHeight);
 	imageData.data.set(data);
 
-	ctx.putImageData(imageData, 0, 0);
+    ctx.putImageData(imageData, 0, 0);
 	//document.getElementById("out").appendChild(can);
 	var img = new Image();
 	img.src = can.toDataURL();
@@ -227,7 +234,8 @@ function Setup(files)
             view_mat: viewMat,
 
             sand_radius: artboard.particle.radius.value,
-            sand_opacity: artboard.particle.opacity.value
+            sand_opacity: artboard.particle.opacity.value,
+            sand_amount: artboard.particle.amount.value
         };
 
       activeBuffer = (activeBuffer + 1) % fbs.length;
@@ -271,4 +279,10 @@ function Setup(files)
 		requestAnimationFrame(displayLoop);
     }
   requestAnimationFrame(displayLoop);
+}
+
+
+function CompileSandArt()
+{
+    CompileShader(sand, [fragHeader, fragFunctions, editor.getValue(), fragMain]);
 }

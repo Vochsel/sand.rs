@@ -21,6 +21,7 @@ float rand(float c){ vec2 co = vec2(c); return fract(sin(dot(co.xy ,vec2(12.9898
 uniform vec3 sand_col;
 uniform float sand_radius;
 uniform float sand_opacity;
+uniform float sand_amount;
 
 uniform vec2 resolution;
 uniform vec2 buffer_res;
@@ -37,7 +38,7 @@ uniform sampler2D buf;
 #define BG vec3(0.9)
 #define GRAIN_SIZE sand_radius * 0.1
 #define SAND_OPACITY sand_opacity
-#define SAND_AMT 100
+#define SAND_AMT 1000
 #define SAND_COL sand_col
 
 struct Sand {

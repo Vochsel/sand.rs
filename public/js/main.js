@@ -12,7 +12,8 @@ var artboard = {
 	particle: {
 		colour: wutils.data.create("#ffe8c4"),
 		radius: wutils.data.create(0.02),
-		opacity: wutils.data.create(1.0)
+		opacity: wutils.data.create(1.0),
+		amount: wutils.data.create(100)
 	},
 	width: wutils.data.create(1280),
 	height: wutils.data.create(720),
@@ -34,6 +35,10 @@ function OnLoad() {
 	artboard.particle.opacity.inlet("sandOpacity_input");
 	artboard.particle.opacity.inlet("sandOpacity_output");
 
+	artboard.particle.amount.inlet("sandAmount_input");
+	artboard.particle.amount.inlet("sandAmount_output");
+	
+
 	artboard.width.inlet("buffer_width_input");
 	
 	artboard.height.inlet("buffer_height_input");
@@ -52,6 +57,7 @@ function OnLoad() {
 
 	wutils.file.load("demo/default.sand", function(file) {
 		editor.setValue(file);
+		CompileSandArt();
 	});
 	
 	var shaders = wutils.file.loadMultiple(["shaders/vert.glsl", 

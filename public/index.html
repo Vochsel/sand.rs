@@ -75,9 +75,19 @@
                         <td><input id="sandOpacity_input" type="range" min="0.0025" max="1.0" step="0.00025"/></td>
                         <td><input class="value_setter" type="text" id="sandOpacity_output"/></td>
                     </tr>
+                    <!--<tr>-->  <!-- Sand amount row -->
+                        <!--<td>Sand Amount</td>
+                        <td><input id="sandAmount_input" type="range" min="1" max="500" step="5"/></td>
+                        <td><input class="value_setter" type="text" id="sandAmount_output"/></td>
+                    </tr>-->
                 </table>
             <hr/> 
-            <textarea id="editor_input" cols="40" rows="23">/* If you are seeing this, no default sand art could be loaded */ void formula(vec2 uv, float p, out Sand s){ s.pos.x = 0; s.pos.y = 0; }</textarea>
+            <textarea id="editor_input">
+/* If you are seeing this, 
+no default sand art could be loaded */ 
+void formula(vec2 uv, float p, out Sand s)
+{ s.pos.x = 0.0; s.pos.y = 0.0; }
+            </textarea>
         </div>
 
         <!-- Renderer -->
