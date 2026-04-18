@@ -1,2 +1,5 @@
 *.exe
 node_modules/
+dist/
+.vite/
+.vercel/

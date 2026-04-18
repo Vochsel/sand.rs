@@ -55,17 +55,17 @@ function OnLoad() {
 		mode: 'text/x-glsl'
 	});
 
-	wutils.file.load("demo/default.sand", function(file) {
+	wutils.file.load("/demo/default.sand", function(file) {
 		editor.setValue(file);
 		CompileSandArt();
 	});
-	
-	var shaders = wutils.file.loadMultiple(["shaders/vert.glsl", 
-										"shaders/frag.glsl", 
-										"shaders/fragViewer.glsl",
-										"shaders/frag_header.glsl",
-										"shaders/frag_functions.glsl",
-										"shaders/frag_main.glsl"], function(files) {
+
+	var shaders = wutils.file.loadMultiple(["/shaders/vert.glsl",
+										"/shaders/frag.glsl",
+										"/shaders/fragViewer.glsl",
+										"/shaders/frag_header.glsl",
+										"/shaders/frag_functions.glsl",
+										"/shaders/frag_main.glsl"], function(files) {
 
 		//Setup WebGL
 		Setup(files);
