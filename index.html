@@ -3,89 +3,89 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sand.rs</title>
-
-    <!-- Libraries -->
-    <script src="/lib/twgl-full.js"></script>
-    <script src="/lib/glMatrix.js"></script>
-    <script src="/lib/wutils.js"></script>
-
-    <!-- Code Mirror -->
-    <script src="/lib/codemirror/codemirror.js"></script>
-    <link rel="stylesheet" href="/lib/codemirror/codemirror.css" />
-    <script src="/lib/codemirror/modes/glsl/glsl.js"></script>
-
-    <!-- Scripts -->
-    <script src="/js/sand.js"></script>
-    <script src="/js/input.js"></script>
-    <script src="/js/webgl.js"></script>
-    <script src="/js/main.js"></script>
-
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/main.css" />
-    <link rel="stylesheet" href="/css/ui.css" />
+    <title>Sand.rs — generative sand art</title>
   </head>
-  <body onload="OnLoad()">
+  <body>
     <div id="app">
       <div id="container">
-        <div id="sidebar">
-          <p id="logo">Sand.art</p>
-          <p id="tagline">Created by Ben Skinner</p>
-          <hr />
-          <div id="settings">
-            <span><b>Settings</b></span>
-            <table>
-              <tr>
-                <td>Width:</td>
-                <td><input id="buffer_width_input" type="text" value="1024px" /></td>
-              </tr>
-              <tr>
-                <td>Height:</td>
-                <td><input id="buffer_height_input" type="text" value="1024px" /></td>
-              </tr>
-            </table>
+        <aside id="sidebar">
+          <div>
+            <h1>sand<span>.rs</span></h1>
+            <p class="tagline">Generative sand art · WebGPU · by Ben Skinner</p>
           </div>
-          <hr />
-          <button onclick="renderer_toggle()">Toggle Renderer</button>
-          <button onclick="renderer_reset()">Reset Renderer</button>
-          <hr />
-          <button onclick="renderer_export()">Export PNG</button>
-          <hr />
-          <table>
-            <tr>
-              <td>Background Color</td>
-              <td><input id="bgCol_input" type="color" /></td>
-              <td><input class="value_setter" type="text" id="bgCol_output" /></td>
-            </tr>
-            <tr>
-              <td>Sand Color</td>
-              <td><input id="sandCol_input" type="color" /></td>
-              <td><input class="value_setter" type="text" id="sandCol_output" /></td>
-            </tr>
-            <tr>
-              <td>Sand Size</td>
-              <td><input id="sandSize_input" type="range" min="0.002" max="0.5" step="0.00025" /></td>
-              <td><input class="value_setter" type="text" id="sandSize_output" /></td>
-            </tr>
-            <tr>
-              <td>Sand Opacity</td>
-              <td><input id="sandOpacity_input" type="range" min="0.0025" max="1.0" step="0.00025" /></td>
-              <td><input class="value_setter" type="text" id="sandOpacity_output" /></td>
-            </tr>
-          </table>
-          <hr />
-          <textarea id="editor_input">
-/* If you are seeing this,
-no default sand art could be loaded */
-void formula(vec2 uv, float p, out Sand s)
-{ s.pos.x = 0.0; s.pos.y = 0.0; }
-          </textarea>
-        </div>
 
-        <div id="viewer">
-          <canvas id="viewer_canvas" width="100%" height="100%"></canvas>
-        </div>
+          <div class="section">
+            <h2>Example</h2>
+            <select id="examples_select"></select>
+          </div>
+
+          <div class="section">
+            <h2>Editor (WGSL)</h2>
+            <div id="editor_host"></div>
+          </div>
+
+          <div class="section">
+            <h2>Render</h2>
+            <div class="button-row">
+              <button id="btn_toggle">Pause</button>
+              <button id="btn_reset">Reset</button>
+            </div>
+            <div class="button-row">
+              <button id="btn_view_reset">Reset View</button>
+              <button id="btn_export" class="primary">Export PNG</button>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Buffer</h2>
+            <div class="size-row">
+              <div>
+                <label for="buffer_w">Width</label>
+                <input id="buffer_w" type="number" min="64" step="64" value="1024" />
+              </div>
+              <div>
+                <label for="buffer_h">Height</label>
+                <input id="buffer_h" type="number" min="64" step="64" value="1024" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Style</h2>
+            <div class="row">
+              <label>Background</label>
+              <input id="bg_input" type="color" />
+              <input id="bg_output" type="text" />
+            </div>
+            <div class="row">
+              <label>Sand color</label>
+              <input id="sand_input" type="color" />
+              <input id="sand_output" type="text" />
+            </div>
+            <div class="row">
+              <label>Sand size</label>
+              <input id="size_input" type="range" min="0.002" max="0.5" step="0.0005" />
+              <input id="size_output" type="text" />
+            </div>
+            <div class="row">
+              <label>Opacity</label>
+              <input id="opacity_input" type="range" min="0.0025" max="1.0" step="0.0025" />
+              <input id="opacity_output" type="text" />
+            </div>
+            <div class="row">
+              <label>Grains</label>
+              <input id="amount_input" type="range" min="50" max="4000" step="10" />
+              <input id="amount_output" type="text" />
+            </div>
+          </div>
+        </aside>
+
+        <main id="viewer">
+          <canvas id="viewer_canvas"></canvas>
+          <div id="error_banner"></div>
+        </main>
       </div>
     </div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>
