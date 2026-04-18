@@ -1,6 +1,14 @@
-import { VIEWER_SHADER, buildSandShader } from "./shaders.js";
+import {
+  PARTICLE_SHADER,
+  VIEWER_SHADER,
+  buildSampleComputeShader,
+} from "./shaders.js";
 
 const UNIFORM_BYTES = 96;
+const SAMPLE_CAPACITY = 4096;
+const SAMPLE_STRIDE = 32;
+const SAMPLE_WORKGROUP_SIZE = 64;
+const SAMPLE_CURSOR_WRAP = 1 << 24;
 const PRESENT_ON_PAUSE_KEYS = new Set(["rendererActive", "viewTx", "viewTy", "viewScale"]);
 
 function sameStateValue(a, b) {
@@ -14,7 +22,7 @@ function sameStateValue(a, b) {
   return Object.is(a, b);
 }
 
-function writeUniforms(state, f, u32) {
+function writeUniforms(state, sampleCursor, frameSeed, f, u32) {
   f[0] = state.canvasW;
   f[1] = state.canvasH;
   f[2] = state.bufferW;
@@ -25,8 +33,8 @@ function writeUniforms(state, f, u32) {
   f[6] = state.bgCol[2];
   f[7] = state.sandRadius;
 
-  f[8]  = state.sandCol[0];
-  f[9]  = state.sandCol[1];
+  f[8] = state.sandCol[0];
+  f[9] = state.sandCol[1];
   f[10] = state.sandCol[2];
   f[11] = state.sandOpacity;
 
@@ -36,9 +44,11 @@ function writeUniforms(state, f, u32) {
   f[15] = state.viewTy;
 
   f[16] = state.viewScale;
-  u32[17] = state.sandAmount;
+  u32[17] = state.sampleCount;
   f[18] = state.mouseX;
   f[19] = state.mouseY;
+  u32[20] = sampleCursor;
+  u32[21] = frameSeed;
 }
 
 export class Engine {
@@ -48,14 +58,18 @@ export class Engine {
     this.ctx = null;
     this.format = null;
     this.uniformBuffer = null;
+    this.sampleBuffer = null;
+    this.sampleCapacity = SAMPLE_CAPACITY;
     this.sampler = null;
     this.targets = null;
     this.targetViews = [null, null];
     this.active = 0;
-    this.sandPipeline = null;
+    this.sampleComputePipeline = null;
+    this.particlePipeline = null;
     this.viewPipeline = null;
     this.viewBindGroups = [null, null];
-    this.sandBindGroups = [null, null];
+    this.sampleComputeBindGroup = null;
+    this.particleBindGroup = null;
     const uniformData = new ArrayBuffer(UNIFORM_BYTES);
     this.uniformBytes = new Uint8Array(uniformData);
     this.uniformFloats = new Float32Array(uniformData);
@@ -63,7 +77,8 @@ export class Engine {
     this.bufferW = 1024;
     this.bufferH = 1024;
     this.elapsed = 0;
-    this.lastTime = 0;
+    this.frameSeed = 0;
+    this.sampleCursor = 0;
     this.shaderError = null;
     this.onShaderError = null;
     this.onNeedsFrame = null;
@@ -84,7 +99,7 @@ export class Engine {
       viewTx: 0,
       viewTy: 0,
       viewScale: 1,
-      sandAmount: 100,
+      sampleCount: 256,
       mouseX: 0.5,
       mouseY: 0.5,
     };
@@ -109,6 +124,10 @@ export class Engine {
       size: UNIFORM_BYTES,
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
+    this.sampleBuffer = this.device.createBuffer({
+      size: this.sampleCapacity * SAMPLE_STRIDE,
+      usage: GPUBufferUsage.STORAGE,
+    });
 
     this.sampler = this.device.createSampler({
       magFilter: "linear",
@@ -118,6 +137,7 @@ export class Engine {
     });
 
     this.createTargets(this.bufferW, this.bufferH);
+    await this.buildParticlePipeline();
     await this.buildViewPipeline();
   }
 
@@ -133,9 +153,10 @@ export class Engine {
     this.bufferW = Math.max(2, Math.floor(w));
     this.bufferH = Math.max(2, Math.floor(h));
     const usage =
+      GPUTextureUsage.COPY_DST |
+      GPUTextureUsage.COPY_SRC |
       GPUTextureUsage.TEXTURE_BINDING |
-      GPUTextureUsage.RENDER_ATTACHMENT |
-      GPUTextureUsage.COPY_SRC;
+      GPUTextureUsage.RENDER_ATTACHMENT;
     this.targets = [
       this.device.createTexture({
         size: [this.bufferW, this.bufferH],
@@ -154,6 +175,8 @@ export class Engine {
     ];
     this.active = 0;
     this.elapsed = 0;
+    this.frameSeed = 0;
+    this.sampleCursor = 0;
     this.state.time = 0;
     this.needsSimulation = true;
     this.needsPresent = true;
@@ -163,25 +186,66 @@ export class Engine {
   }
 
   rebuildBindGroups() {
-    if (!this.viewPipeline || !this.sandPipeline) return;
-    for (let i = 0; i < 2; i++) {
-      this.sandBindGroups[i] = this.device.createBindGroup({
-        layout: this.sandPipeline.getBindGroupLayout(0),
+    if (this.viewPipeline) {
+      for (let i = 0; i < 2; i++) {
+        this.viewBindGroups[i] = this.device.createBindGroup({
+          layout: this.viewPipeline.getBindGroupLayout(0),
+          entries: [
+            { binding: 0, resource: { buffer: this.uniformBuffer } },
+            { binding: 1, resource: this.targetViews[i] },
+            { binding: 2, resource: this.sampler },
+          ],
+        });
+      }
+    }
+    if (this.sampleComputePipeline) {
+      this.sampleComputeBindGroup = this.device.createBindGroup({
+        layout: this.sampleComputePipeline.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: this.uniformBuffer } },
-          { binding: 1, resource: this.targetViews[1 - i] },
-          { binding: 2, resource: this.sampler },
-        ],
-      });
-      this.viewBindGroups[i] = this.device.createBindGroup({
-        layout: this.viewPipeline.getBindGroupLayout(0),
-        entries: [
-          { binding: 0, resource: { buffer: this.uniformBuffer } },
-          { binding: 1, resource: this.targetViews[i] },
-          { binding: 2, resource: this.sampler },
+          { binding: 1, resource: { buffer: this.sampleBuffer } },
         ],
       });
     }
+    if (this.particlePipeline) {
+      this.particleBindGroup = this.device.createBindGroup({
+        layout: this.particlePipeline.getBindGroupLayout(0),
+        entries: [
+          { binding: 0, resource: { buffer: this.uniformBuffer } },
+          { binding: 1, resource: { buffer: this.sampleBuffer } },
+        ],
+      });
+    }
+  }
+
+  async buildParticlePipeline() {
+    const module = this.device.createShaderModule({ code: PARTICLE_SHADER });
+    this.particlePipeline = await this.device.createRenderPipelineAsync({
+      layout: "auto",
+      vertex: { module, entryPoint: "vs_particles" },
+      fragment: {
+        module,
+        entryPoint: "fs_particles",
+        targets: [
+          {
+            format: "rgba8unorm",
+            blend: {
+              color: {
+                srcFactor: "one",
+                dstFactor: "one-minus-src-alpha",
+                operation: "add",
+              },
+              alpha: {
+                srcFactor: "one",
+                dstFactor: "one-minus-src-alpha",
+                operation: "add",
+              },
+            },
+          },
+        ],
+      },
+      primitive: { topology: "triangle-list" },
+    });
   }
 
   async buildViewPipeline() {
@@ -199,7 +263,7 @@ export class Engine {
   }
 
   async setUserShader(formulaWGSL) {
-    const code = buildSandShader(formulaWGSL);
+    const code = buildSampleComputeShader(formulaWGSL);
     this.device.pushErrorScope("validation");
     const module = this.device.createShaderModule({ code });
 
@@ -215,15 +279,9 @@ export class Engine {
 
     let pipeline;
     try {
-      pipeline = await this.device.createRenderPipelineAsync({
+      pipeline = await this.device.createComputePipelineAsync({
         layout: "auto",
-        vertex: { module, entryPoint: "vs_main" },
-        fragment: {
-          module,
-          entryPoint: "fs_sand",
-          targets: [{ format: "rgba8unorm" }],
-        },
-        primitive: { topology: "triangle-list" },
+        compute: { module, entryPoint: "cs_samples" },
       });
     } catch (e) {
       const err = `Pipeline error: ${e.message}`;
@@ -240,16 +298,11 @@ export class Engine {
       return false;
     }
 
-    this.sandPipeline = pipeline;
+    this.sampleComputePipeline = pipeline;
     this.shaderError = null;
     this.onShaderError?.(null);
     this.rebuildBindGroups();
-    this.elapsed = 0;
-    this.state.time = 0;
-    this.needsSimulation = true;
-    this.needsPresent = true;
-    this.forceClear = true;
-    this.requestFrame();
+    this.reset();
     return true;
   }
 
@@ -270,6 +323,8 @@ export class Engine {
 
   reset() {
     this.elapsed = 0;
+    this.frameSeed = 0;
+    this.sampleCursor = 0;
     this.state.time = 0;
     this.needsSimulation = true;
     this.needsPresent = true;
@@ -304,24 +359,28 @@ export class Engine {
   }
 
   frame(dtSeconds) {
-    if (!this.sandPipeline) return false;
+    if (!this.sampleComputePipeline || !this.particlePipeline) return false;
     const resized = this.resizeCanvasToDisplay();
     const shouldSimulate = this.state.rendererActive || this.needsSimulation;
     const shouldPresent = shouldSimulate || this.needsPresent || resized;
     if (!shouldPresent) return false;
 
+    const sampleCount = Math.max(1, Math.min(this.sampleCapacity, Math.floor(this.state.sampleCount)));
     this.state.bufferW = this.bufferW;
     this.state.bufferH = this.bufferH;
+    this.state.sampleCount = sampleCount;
     this.state.time = shouldSimulate
       ? (this.forceClear ? 0 : this.elapsed + dtSeconds)
       : this.elapsed;
 
-    writeUniforms(this.state, this.uniformFloats, this.uniformU32);
-    this.device.queue.writeBuffer(
-      this.uniformBuffer,
-      0,
-      this.uniformBytes
+    writeUniforms(
+      this.state,
+      this.sampleCursor >>> 0,
+      this.frameSeed >>> 0,
+      this.uniformFloats,
+      this.uniformU32
     );
+    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformBytes);
 
     const encoder = this.device.createCommandEncoder();
     const writeIdx = this.active;
@@ -329,45 +388,63 @@ export class Engine {
     let presentIdx = readIdx;
 
     if (shouldSimulate) {
+      if (!this.forceClear) {
+        encoder.copyTextureToTexture(
+          { texture: this.targets[readIdx] },
+          { texture: this.targets[writeIdx] },
+          [this.bufferW, this.bufferH, 1]
+        );
+      }
+
+      const computePass = encoder.beginComputePass();
+      computePass.setPipeline(this.sampleComputePipeline);
+      computePass.setBindGroup(0, this.sampleComputeBindGroup);
+      computePass.dispatchWorkgroups(Math.ceil(sampleCount / SAMPLE_WORKGROUP_SIZE));
+      computePass.end();
+
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
             view: this.targetViews[writeIdx],
-            loadOp: "clear",
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            loadOp: this.forceClear ? "clear" : "load",
+            clearValue: {
+              r: this.state.bgCol[0],
+              g: this.state.bgCol[1],
+              b: this.state.bgCol[2],
+              a: 1,
+            },
             storeOp: "store",
           },
         ],
       });
-      pass.setPipeline(this.sandPipeline);
-      pass.setBindGroup(0, this.sandBindGroups[writeIdx]);
-      pass.draw(3);
+      pass.setPipeline(this.particlePipeline);
+      pass.setBindGroup(0, this.particleBindGroup);
+      pass.draw(6, sampleCount);
       pass.end();
       presentIdx = writeIdx;
     }
 
-    // viewer pass to canvas
-    {
-      const pass = encoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: this.ctx.getCurrentTexture().createView(),
-            loadOp: "clear",
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
-            storeOp: "store",
-          },
-        ],
-      });
-      pass.setPipeline(this.viewPipeline);
-      pass.setBindGroup(0, this.viewBindGroups[presentIdx]);
-      pass.draw(3);
-      pass.end();
-    }
+    const viewPass = encoder.beginRenderPass({
+      colorAttachments: [
+        {
+          view: this.ctx.getCurrentTexture().createView(),
+          loadOp: "clear",
+          clearValue: { r: 0, g: 0, b: 0, a: 1 },
+          storeOp: "store",
+        },
+      ],
+    });
+    viewPass.setPipeline(this.viewPipeline);
+    viewPass.setBindGroup(0, this.viewBindGroups[presentIdx]);
+    viewPass.draw(3);
+    viewPass.end();
 
     this.device.queue.submit([encoder.finish()]);
     if (shouldSimulate) {
       this.active = readIdx;
       this.elapsed = this.state.time;
+      this.frameSeed = (this.frameSeed + 1) >>> 0;
+      this.sampleCursor = (this.sampleCursor + sampleCount) % SAMPLE_CURSOR_WRAP;
       this.needsSimulation = false;
       this.forceClear = false;
     }
@@ -384,7 +461,7 @@ export class Engine {
       usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ,
     });
     const enc = this.device.createCommandEncoder();
-    const src = this.targets[1 - this.active]; // last fully-rendered
+    const src = this.targets[1 - this.active];
     enc.copyTextureToBuffer(
       { texture: src },
       { buffer: stagingBuf, bytesPerRow, rowsPerImage: h },
@@ -399,14 +476,13 @@ export class Engine {
     can.height = h;
     const ctx = can.getContext("2d");
     const img = ctx.createImageData(w, h);
-    // tightly pack rows (drop bytesPerRow padding); rows already top-down
     for (let y = 0; y < h; y++) {
       const srcRow = y * bytesPerRow;
       const dstRow = y * w * 4;
       for (let x = 0; x < w; x++) {
         const sIdx = srcRow + x * 4;
         const dIdx = dstRow + x * 4;
-        img.data[dIdx]     = data[sIdx];
+        img.data[dIdx] = data[sIdx];
         img.data[dIdx + 1] = data[sIdx + 1];
         img.data[dIdx + 2] = data[sIdx + 2];
         img.data[dIdx + 3] = data[sIdx + 3];

@@ -59,10 +59,9 @@ export const EXAMPLES = [
   {
     name: "Bloom",
     defaults: {
-      sandAmount: 60,
-      bufferSize: 768,
+      sampleCount: 384,
+      bufferSize: 1024,
     },
-    workload: 2.2,
     code: `fn formula(uv: vec2f, p: f32) -> Sand {
   var s = default_sand();
   let ring = floor(p * 16.0);

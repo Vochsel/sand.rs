@@ -10,23 +10,15 @@ import {
 import "./style.css";
 
 const $ = (id) => document.getElementById(id);
-const MIN_GRAINS = 10;
-const MAX_GRAINS = 1000;
-const GRAIN_STEP = 10;
-const WORKLOAD_BUDGET = 120_000_000;
+const MIN_SAMPLES = 16;
+const MAX_SAMPLES = 4096;
+const SAMPLE_STEP = 16;
 
-function clampGrains(requested, example, bufferW, bufferH) {
-  const rounded = Math.max(
-    MIN_GRAINS,
-    Math.min(MAX_GRAINS, Math.round(requested / GRAIN_STEP) * GRAIN_STEP)
+function clampSamples(requested) {
+  return Math.max(
+    MIN_SAMPLES,
+    Math.min(MAX_SAMPLES, Math.round(requested / SAMPLE_STEP) * SAMPLE_STEP)
   );
-  const area = Math.max(1, Math.floor(bufferW) * Math.floor(bufferH));
-  const workload = example?.workload ?? 1;
-  const budgetCap = Math.max(
-    MIN_GRAINS,
-    Math.floor((WORKLOAD_BUDGET / (area * workload)) / GRAIN_STEP) * GRAIN_STEP
-  );
-  return Math.min(rounded, budgetCap);
 }
 
 async function boot() {
@@ -78,7 +70,7 @@ async function boot() {
   const bufferHInput = $("buffer_h");
   let currentExample = EXAMPLES[0];
 
-  const syncGrainControls = (value) => {
+  const syncSampleControls = (value) => {
     amountInput.value = String(value);
     amountOutput.value = String(value);
   };
@@ -86,16 +78,15 @@ async function boot() {
     bufferWInput.value = String(engine.bufferW);
     bufferHInput.value = String(engine.bufferH);
   };
-  const applySandAmount = (requested) => {
-    const next = clampGrains(requested, currentExample, engine.bufferW, engine.bufferH);
-    engine.setState({ sandAmount: next });
-    syncGrainControls(next);
+  const applySampleCount = (requested) => {
+    const next = clampSamples(requested);
+    engine.setState({ sampleCount: next });
+    syncSampleControls(next);
     return next;
   };
   const applyBufferSize = (w, h) => {
     engine.setBufferSize(w, h);
     syncBufferControls();
-    applySandAmount(engine.state.sandAmount);
   };
   const applyExampleDefaults = (example) => {
     currentExample = example;
@@ -103,10 +94,11 @@ async function boot() {
       applyBufferSize(example.defaults.bufferSize, example.defaults.bufferSize);
     } else {
       syncBufferControls();
-      applySandAmount(engine.state.sandAmount);
     }
-    if (example.defaults?.sandAmount) {
-      applySandAmount(example.defaults.sandAmount);
+    if (example.defaults?.sampleCount) {
+      applySampleCount(example.defaults.sampleCount);
+    } else {
+      syncSampleControls(engine.state.sampleCount);
     }
   };
 
@@ -146,7 +138,7 @@ async function boot() {
   bindRange($("opacity_input"), $("opacity_output"),
     () => engine.state.sandOpacity, (v) => engine.setState({ sandOpacity: v }));
   bindRange(amountInput, amountOutput,
-    () => engine.state.sandAmount, (v) => applySandAmount(v),
+    () => engine.state.sampleCount, (v) => applySampleCount(v),
     (v) => Math.round(v).toString());
 
   bindNumber(bufferWInput,
