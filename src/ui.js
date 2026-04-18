@@ -18,19 +18,22 @@ export function rgb01ToHex([r, g, b]) {
 }
 
 export function bindRange(input, valueOut, getter, setter, format) {
-  const sync = () => {
-    const v = parseFloat(input.value);
-    setter(v);
+  const sync = (raw) => {
+    const next = setter(raw);
+    const v = Number.isFinite(next) ? next : raw;
+    input.value = v;
     valueOut.value = format ? format(v) : v.toFixed(4);
   };
   input.value = getter();
   valueOut.value = format ? format(getter()) : getter().toFixed(4);
-  input.addEventListener("input", sync);
+  input.addEventListener("input", () => {
+    const v = parseFloat(input.value);
+    sync(v);
+  });
   valueOut.addEventListener("change", () => {
     const v = parseFloat(valueOut.value);
     if (!isFinite(v)) return;
-    input.value = v;
-    setter(v);
+    sync(v);
   });
 }
 
@@ -53,7 +56,9 @@ export function bindNumber(input, getter, setter) {
   input.value = getter();
   input.addEventListener("change", () => {
     const v = parseFloat(input.value);
-    if (isFinite(v) && v > 0) setter(v);
+    if (!isFinite(v) || v <= 0) return;
+    const next = setter(v);
+    if (Number.isFinite(next)) input.value = next;
   });
 }
 

@@ -1,12 +1,20 @@
 import { VIEWER_SHADER, buildSandShader } from "./shaders.js";
 
 const UNIFORM_BYTES = 96;
+const PRESENT_ON_PAUSE_KEYS = new Set(["rendererActive", "viewTx", "viewTy", "viewScale"]);
 
-function packUniforms(state) {
-  const buf = new ArrayBuffer(UNIFORM_BYTES);
-  const f = new Float32Array(buf);
-  const u32 = new Uint32Array(buf);
+function sameStateValue(a, b) {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!Object.is(a[i], b[i])) return false;
+    }
+    return true;
+  }
+  return Object.is(a, b);
+}
 
+function writeUniforms(state, f, u32) {
   f[0] = state.canvasW;
   f[1] = state.canvasH;
   f[2] = state.bufferW;
@@ -31,8 +39,6 @@ function packUniforms(state) {
   u32[17] = state.sandAmount;
   f[18] = state.mouseX;
   f[19] = state.mouseY;
-
-  return new Uint8Array(buf);
 }
 
 export class Engine {
@@ -44,17 +50,26 @@ export class Engine {
     this.uniformBuffer = null;
     this.sampler = null;
     this.targets = null;
+    this.targetViews = [null, null];
     this.active = 0;
     this.sandPipeline = null;
     this.viewPipeline = null;
     this.viewBindGroups = [null, null];
     this.sandBindGroups = [null, null];
+    const uniformData = new ArrayBuffer(UNIFORM_BYTES);
+    this.uniformBytes = new Uint8Array(uniformData);
+    this.uniformFloats = new Float32Array(uniformData);
+    this.uniformU32 = new Uint32Array(uniformData);
     this.bufferW = 1024;
     this.bufferH = 1024;
     this.elapsed = 0;
     this.lastTime = 0;
     this.shaderError = null;
     this.onShaderError = null;
+    this.onNeedsFrame = null;
+    this.needsSimulation = true;
+    this.needsPresent = true;
+    this.forceClear = true;
     this.state = {
       canvasW: 1,
       canvasH: 1,
@@ -69,7 +84,7 @@ export class Engine {
       viewTx: 0,
       viewTy: 0,
       viewScale: 1,
-      sandAmount: 1000,
+      sandAmount: 100,
       mouseX: 0.5,
       mouseY: 0.5,
     };
@@ -103,7 +118,11 @@ export class Engine {
     });
 
     this.createTargets(this.bufferW, this.bufferH);
-    this.buildViewPipeline();
+    await this.buildViewPipeline();
+  }
+
+  requestFrame() {
+    this.onNeedsFrame?.();
   }
 
   createTargets(w, h) {
@@ -129,20 +148,28 @@ export class Engine {
         usage,
       }),
     ];
+    this.targetViews = [
+      this.targets[0].createView(),
+      this.targets[1].createView(),
+    ];
     this.active = 0;
     this.elapsed = 0;
+    this.state.time = 0;
+    this.needsSimulation = true;
+    this.needsPresent = true;
+    this.forceClear = true;
     this.rebuildBindGroups();
+    this.requestFrame();
   }
 
   rebuildBindGroups() {
     if (!this.viewPipeline || !this.sandPipeline) return;
     for (let i = 0; i < 2; i++) {
-      const prev = this.targets[1 - i];
       this.sandBindGroups[i] = this.device.createBindGroup({
         layout: this.sandPipeline.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: this.uniformBuffer } },
-          { binding: 1, resource: prev.createView() },
+          { binding: 1, resource: this.targetViews[1 - i] },
           { binding: 2, resource: this.sampler },
         ],
       });
@@ -150,16 +177,16 @@ export class Engine {
         layout: this.viewPipeline.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: this.uniformBuffer } },
-          { binding: 1, resource: this.targets[i].createView() },
+          { binding: 1, resource: this.targetViews[i] },
           { binding: 2, resource: this.sampler },
         ],
       });
     }
   }
 
-  buildViewPipeline() {
+  async buildViewPipeline() {
     const module = this.device.createShaderModule({ code: VIEWER_SHADER });
-    this.viewPipeline = this.device.createRenderPipeline({
+    this.viewPipeline = await this.device.createRenderPipelineAsync({
       layout: "auto",
       vertex: { module, entryPoint: "vs_main" },
       fragment: {
@@ -188,7 +215,7 @@ export class Engine {
 
     let pipeline;
     try {
-      pipeline = this.device.createRenderPipeline({
+      pipeline = await this.device.createRenderPipelineAsync({
         layout: "auto",
         vertex: { module, entryPoint: "vs_main" },
         fragment: {
@@ -218,6 +245,11 @@ export class Engine {
     this.onShaderError?.(null);
     this.rebuildBindGroups();
     this.elapsed = 0;
+    this.state.time = 0;
+    this.needsSimulation = true;
+    this.needsPresent = true;
+    this.forceClear = true;
+    this.requestFrame();
     return true;
   }
 
@@ -225,20 +257,43 @@ export class Engine {
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = Math.max(1, Math.floor(this.canvas.clientWidth * dpr));
     const h = Math.max(1, Math.floor(this.canvas.clientHeight * dpr));
-    if (this.canvas.width !== w || this.canvas.height !== h) {
+    const resized = this.canvas.width !== w || this.canvas.height !== h;
+    if (resized) {
       this.canvas.width = w;
       this.canvas.height = h;
+      this.needsPresent = true;
     }
     this.state.canvasW = this.canvas.width;
     this.state.canvasH = this.canvas.height;
+    return resized;
   }
 
   reset() {
     this.elapsed = 0;
+    this.state.time = 0;
+    this.needsSimulation = true;
+    this.needsPresent = true;
+    this.forceClear = true;
+    this.requestFrame();
   }
 
   setState(patch) {
-    Object.assign(this.state, patch);
+    let changed = false;
+    let needsPresent = false;
+
+    for (const [key, rawValue] of Object.entries(patch)) {
+      const value = Array.isArray(rawValue) ? [...rawValue] : rawValue;
+      if (sameStateValue(this.state[key], value)) continue;
+      this.state[key] = value;
+      changed = true;
+      if (PRESENT_ON_PAUSE_KEYS.has(key)) needsPresent = true;
+    }
+
+    if (!changed) return;
+    if (needsPresent) this.needsPresent = true;
+    if (this.state.rendererActive || needsPresent) {
+      this.requestFrame();
+    }
   }
 
   setBufferSize(w, h) {
@@ -249,29 +304,35 @@ export class Engine {
   }
 
   frame(dtSeconds) {
-    if (!this.sandPipeline) return;
-    this.resizeCanvasToDisplay();
-    this.elapsed += dtSeconds;
-    this.state.time = this.elapsed;
+    if (!this.sandPipeline) return false;
+    const resized = this.resizeCanvasToDisplay();
+    const shouldSimulate = this.state.rendererActive || this.needsSimulation;
+    const shouldPresent = shouldSimulate || this.needsPresent || resized;
+    if (!shouldPresent) return false;
+
     this.state.bufferW = this.bufferW;
     this.state.bufferH = this.bufferH;
+    this.state.time = shouldSimulate
+      ? (this.forceClear ? 0 : this.elapsed + dtSeconds)
+      : this.elapsed;
 
+    writeUniforms(this.state, this.uniformFloats, this.uniformU32);
     this.device.queue.writeBuffer(
       this.uniformBuffer,
       0,
-      packUniforms(this.state)
+      this.uniformBytes
     );
 
     const encoder = this.device.createCommandEncoder();
     const writeIdx = this.active;
     const readIdx = 1 - writeIdx;
+    let presentIdx = readIdx;
 
-    // sand pass into write target, sampling read target
-    {
+    if (shouldSimulate) {
       const pass = encoder.beginRenderPass({
         colorAttachments: [
           {
-            view: this.targets[writeIdx].createView(),
+            view: this.targetViews[writeIdx],
             loadOp: "clear",
             clearValue: { r: 0, g: 0, b: 0, a: 1 },
             storeOp: "store",
@@ -282,6 +343,7 @@ export class Engine {
       pass.setBindGroup(0, this.sandBindGroups[writeIdx]);
       pass.draw(3);
       pass.end();
+      presentIdx = writeIdx;
     }
 
     // viewer pass to canvas
@@ -297,13 +359,20 @@ export class Engine {
         ],
       });
       pass.setPipeline(this.viewPipeline);
-      pass.setBindGroup(0, this.viewBindGroups[writeIdx]);
+      pass.setBindGroup(0, this.viewBindGroups[presentIdx]);
       pass.draw(3);
       pass.end();
     }
 
     this.device.queue.submit([encoder.finish()]);
-    this.active = readIdx;
+    if (shouldSimulate) {
+      this.active = readIdx;
+      this.elapsed = this.state.time;
+      this.needsSimulation = false;
+      this.forceClear = false;
+    }
+    this.needsPresent = false;
+    return this.state.rendererActive;
   }
 
   async exportPNG() {

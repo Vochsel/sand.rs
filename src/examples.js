@@ -57,17 +57,24 @@ export const EXAMPLES = [
 }`,
   },
   {
-    name: "Bloom (FBM)",
+    name: "Bloom",
+    defaults: {
+      sandAmount: 60,
+      bufferSize: 768,
+    },
+    workload: 2.2,
     code: `fn formula(uv: vec2f, p: f32) -> Sand {
   var s = default_sand();
-  let seed = vec2f(p * 4.0, u.time * 0.1);
-  let n = fbm(seed);
-  let theta = n * PI2;
-  let r = 0.2 + 0.45 * fbm(seed * 1.3);
-  s.pos = vec2f(r * cos(theta), r * sin(theta));
-  s.size    = 0.003;
-  s.opacity = 0.05;
-  s.col = mix(vec3f(0.2, 0.6, 0.4), vec3f(1.0, 0.95, 0.7), n);
+  let ring = floor(p * 16.0);
+  let ring_t = fract(p * 16.0);
+  let ring_seed = ring + 1.0;
+  let petals = 5.0 + floor(rand1(ring_seed) * 4.0);
+  let theta = ring_t * PI2 + u.time * (0.04 + 0.02 * rand1(ring_seed + 1.0));
+  let radius = 0.18 + ring * 0.022 + 0.12 * sin(theta * petals + ring_seed);
+  s.pos = vec2f(cos(theta), sin(theta)) * radius;
+  s.size = mix(0.0022, 0.0042, ring_t);
+  s.opacity = 0.03 + 0.018 * (1.0 - ring_t);
+  s.col = mix(vec3f(0.18, 0.52, 0.36), vec3f(1.0, 0.92, 0.68), ring_t);
   return s;
 }`,
   },
